@@ -2,6 +2,7 @@ import { resume } from "@/data/resume";
 import shivam from "@/assets/shivam.jpg";
 import { useState } from "react";
 import type { WindowId } from "../types";
+import { ICONS } from "@/data/desktopIcons";
 
 export function AboutWindow() {
   return (
@@ -315,9 +316,9 @@ export function NotepadWindow() {
 
 export function HobbiesWindow({ open }: { open: (id: WindowId) => void }) {
   const items: { id: WindowId; icon: string; label: string }[] = [
-    { id: "media", icon: "🎵", label: "Media Player" },
-    { id: "pictures", icon: "🖼", label: "My Pictures" },
-    { id: "notepad", icon: "📝", label: "Notepad" },
+    { id: "media", icon: ICONS.mediaPlayer, label: "Media Player" },
+    { id: "pictures", icon: ICONS.pictures, label: "My Pictures" },
+    { id: "notepad", icon: ICONS.notepad, label: "Notepad" },
   ];
   return (
     <div>
@@ -326,13 +327,16 @@ export function HobbiesWindow({ open }: { open: (id: WindowId) => void }) {
         {items.map((it) => (
           <div
             key={it.id}
-            className="xp-icon"
-            style={{ background: "white", border: "1px solid #aca899" }}
+            style={{
+              background: "white", border: "1px solid #aca899", padding: 10,
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+              cursor: "pointer",
+            }}
             onDoubleClick={() => open(it.id)}
             onClick={() => open(it.id)}
           >
-            <div className="xp-icon-glyph">{it.icon}</div>
-            <div style={{ color: "#000", textShadow: "none", fontSize: 11 }}>{it.label}</div>
+            <img src={it.icon} alt="" style={{ width: 40, height: 40, imageRendering: "pixelated" }} />
+            <div style={{ color: "#000", fontSize: 11 }}>{it.label}</div>
           </div>
         ))}
       </div>
@@ -343,7 +347,7 @@ export function HobbiesWindow({ open }: { open: (id: WindowId) => void }) {
 export function RecycleWindow() {
   return (
     <div style={{ textAlign: "center", padding: 30, color: "#555" }}>
-      <div style={{ fontSize: 48 }}>🗑</div>
+      <img src={ICONS.recycleEmpty} alt="" style={{ width: 48, height: 48, imageRendering: "pixelated" }} />
       <p>The Recycle Bin is empty.</p>
     </div>
   );
