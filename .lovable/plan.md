@@ -1,71 +1,77 @@
-# Windows XP Personal Site — Final Build Plan
+# Authentic Windows XP Desktop — Refinement Plan
 
-A single-page, fully static Windows XP desktop for Shivam Kumar Swarnkar. Real Bliss wallpaper, draggable Luna-style windows, taskbar with live clock, Start menu. No backend.
+Goal: make the existing XP portfolio pixel-faithful to real Windows XP (Luna Blue theme) shown in your screenshot, and make every desktop icon freely draggable. No new content/data changes — purely visual + interaction fidelity.
 
-## Assets to copy in
-- `user-uploads://windows-xp-3840x2160-17062.jpg` → `src/assets/bliss.jpg` (desktop wallpaper)
-- `user-uploads://IMG-20260110-WA0196.jpg` → `src/assets/shivam.jpg` (profile photo, About + Start menu)
-- `user-uploads://ML_Engineer_Shivam_Kumar_Swarnkar.pdf` → `public/resume.pdf` (download + open-in-tab)
+## 1. Authentic XP assets (replace all emoji/placeholder glyphs)
 
-## Desktop icons (left column)
-1. My Computer → About Me
-2. My Resume → Resume window (embedded PDF + Download button)
-3. My Projects → Projects window
-4. My Experience → Experience + Education window
-5. My Skills → Skills window
-6. My Hobbies (folder) → opens a sub-window with shortcuts to Media Player, My Pictures, Notepad
-7. Contact → Contact card (email, phone, LinkedIn, GitHub, LeetCode, Kaggle, Medium)
-8. Recycle Bin (cosmetic, shows empty dialog)
+Source: real XP icon PNGs from the public `win98icons` / `windows-xp-icons` CDN (free, MIT-licensed, used by every "XP in browser" project). Files saved under `public/xp/icons/` so they're served directly:
 
-## Auto-opens on load
-**"Welcome.txt" (Notepad)** with the Shawshank quote + "type anything, nothing is saved" — single fun first impression, no big tutorial modal.
+- `my-computer.png` — My Computer
+- `recycle-bin-empty.png` / `recycle-bin-full.png` — Recycle Bin
+- `folder-closed.png` / `folder-open.png` — My Hobbies, generic folders
+- `notepad.png` — Notepad
+- `wmp.png` — Windows Media Player
+- `pictures-folder.png` — My Pictures
+- `ie.png` — Internet (used for LinkedIn/GitHub/Medium link icons)
+- `outlook.png` — E-mail (Contact)
+- `acrobat.png` — My Resume (PDF)
+- `cmd.png` — My Work / Projects
+- `user.png` — fallback Start menu user
+- `start-button.png` — the real green Luna Start button (left-rounded, italic "start" with flag)
+- `taskbar-bg.png` — repeatable blue gradient strip (or recreate with exact CSS gradient stops from Luna spec)
+- `titlebar-left.png` / `titlebar-right.png` — exact title bar caps (optional; CSS gradient already close)
+- `tb-min.png` / `tb-max.png` / `tb-restore.png` / `tb-close.png` — title bar buttons
 
-## Windows (all draggable, min/max/close)
-- **About Me** — photo, name, role (ML/Data Science undergrad), location (India), bio from resume objective
-- **Resume** — `<iframe src="/resume.pdf">` + Download button
-- **Projects** — Mobile Price Classification, Clickbait Detection (DeBERTa), Project Navigator Pro (link to lovable project), plus GitHub link
-- **Experience** — Deep Thought, WorldQuant DS Lab, McKinsey Forward
-- **Education** — MAKAUT B.Tech IT, GPA 8.6, coursework + Certifications (Andrew Ng ML, DL, AI For Everyone)
-- **Skills** — grouped exactly as resume table
-- **Contact** — email, phone, all links incl. Medium blog
-- **Media Player** — XP-style WMP skin, list of 5 songs + 2 special mentions, click → opens Spotify/YouTube in new tab (no actual audio embedding — keeps it light)
-- **My Pictures** — thumbnail grid of 4–6 movie/quote posters generated as simple SVG cards (Shawshank quote as one), click to enlarge. *(No user-supplied pics; can be swapped later — clearly marked in data file.)*
-- **Notepad** — editable textarea with the Shawshank quote pre-filled
+Fetched once via `curl` in build prep, committed to repo. All icons referenced as `<img src="/xp/icons/...png">` so no bundler import churn.
 
-## Taskbar
-- Start button (green Luna gradient) → Start menu with profile photo, username "Shivam Kumar Swarnkar", quick links to all windows, "Shut Down" (shows polite dialog)
-- Running window buttons in middle
-- System tray: volume/network icons (cosmetic) + live clock
+## 2. Start button + taskbar (pixel-accurate)
 
-## Fun touches (cheap, no overhead)
-1. **Live clock** in system tray
-2. **Bouncing cursor + small "ding" no-sound dialog** when clicking Shut Down ("It is now safe to turn off your computer" XP-style screen as overlay, with Cancel)
+- Replace CSS-only Start button with a real `start-button.png` background (hover state = brightness filter; active state = `start-button-pressed.png`).
+- Taskbar: keep current blue gradient but match exact Luna stops (`#245edb → #3f8cf3 → #245edb`), add the 2px highlight line on top, and the embossed grab-handle dots on the left of running-task area.
+- System tray: white-on-blue clock with the inner sunken border, plus authentic volume + network tray icons (`tray-volume.png`, `tray-network.png`).
 
-## Tech / files
-- Single route `src/routes/index.tsx`
-- Components in `src/components/xp/`: `XPDesktop`, `XPIcon`, `XPWindow`, `XPTaskbar`, `XPStartMenu`, `XPShutdown`
-- Window content components in `src/components/xp/windows/`: `AboutWindow`, `ResumeWindow`, `ProjectsWindow`, `ExperienceWindow`, `SkillsWindow`, `ContactWindow`, `MediaPlayerWindow`, `PicturesWindow`, `NotepadWindow`, `HobbiesWindow`
-- All resume data in `src/data/resume.ts` — populated from your PDF + links. Every field commented for easy edits.
-- XP styling in `src/styles.css`: Luna blue title bars, Tahoma font stack, beveled buttons, green Start gradient, taskbar gradient. Pure CSS — no extra packages.
-- Drag implemented with plain `mousedown/mousemove/mouseup` (no dnd lib). Window stack via single `useState`.
-- Mobile (your viewport is 393px): windows auto-fullscreen, icons reflow to a 2-col grid, taskbar stays. Drag disabled <768px.
+## 3. Window chrome (Luna Blue, pixel-faithful)
 
-## SEO / head
-Title: "Shivam Kumar Swarnkar — ML Engineer", description from objective, og:image = profile photo.
+- Title bar: switch from pure CSS to a 3-slice background (left cap + repeatable middle + right cap with buttons) so corners are perfectly rounded like XP. Active vs inactive states use different image sets.
+- Title bar buttons: real `_` `▢` `✕` PNGs (XP's exact red-gradient close).
+- Window body: `#ECE9D8` (already correct), 3D beveled border using `border-top: 1px #fff; border-left: 1px #fff; border-right: 1px #404040; border-bottom: 1px #404040` to match XP's outset look.
+- Menu bar: standard XP "File Edit View Favorites Tools Help" with underlined access keys, on every window that historically had one (Notepad, My Pictures, Media Player).
 
-## Out of scope (kept lean as agreed)
-- No boot/login animation
-- No window resize/snap
-- No right-click menus
-- No file explorer tree
-- No real audio playback
-- No persistence (refresh = clean desktop)
+## 4. Draggable desktop icons (the main interaction fix)
 
-## How to scale later
-- Add a window: create component in `windows/`, add an entry to `windowsRegistry.ts`, add icon in `desktopIcons.ts`. Everything else (drag, taskbar, z-index) works automatically.
-- Swap resume content: edit `src/data/resume.ts` only.
-- Replace pictures: drop files in `src/assets/pictures/` and update the `pictures` array.
-- Add real audio: swap Media Player link-out for `<audio>` element with a `url` field per song.
-- Add blog feed: fetch Medium RSS in a server function and render in a new "Blog" window.
+Right now icons sit in a fixed left column. New behavior:
 
-Ready to build on approval.
+- Each icon has its own `{ x, y }` in `useState`, initial values laid out in a grid (top-left, 80px spacing) just like XP.
+- Pointer events (`pointerdown` / `pointermove` / `pointerup`) on the icon itself — same drag pattern as windows, no library.
+- Drag threshold of 4px so a tap still counts as a single-click select / double-click open.
+- Single click = select (blue translucent box around icon). Double click (or Enter) = open the window.
+- Drag snaps to a 4px grid on release (XP-style auto-arrange OFF by default).
+- Positions persisted to `localStorage` under `xp:icon-positions` so refresh keeps your layout (small, no backend).
+- Disabled on viewports < 640px (mobile keeps the current 2-col fixed grid; windows still auto-fullscreen).
+
+## 5. Other authenticity polish (cheap)
+
+- Selection rectangle: click-drag on empty desktop draws the classic dashed translucent-blue marquee and selects icons under it.
+- Right-click on desktop → XP context menu (Arrange Icons By, Refresh, Paste, Properties — Properties opens a fake Display Properties dialog as a fun touch). Right-click on icon → Open / Rename / Delete (Delete just plays the recycle animation, doesn't really remove).
+- Bliss wallpaper: ensure `object-fit: cover` and `image-rendering: auto` so it looks crisp.
+- Tahoma font: load the real `Tahoma` web font (or `Trebuchet MS` fallback already in place) — XP uses Tahoma 11px everywhere; bump base font to exactly that.
+- Cursor: use the standard XP arrow cursor PNG via `cursor: url(/xp/cursors/arrow.cur), auto` for the full-desktop feel.
+
+## 6. Files touched
+
+- `public/xp/icons/*` — NEW (all PNG assets, fetched once)
+- `public/xp/cursors/*` — NEW (optional)
+- `src/components/xp/XPDesktop.tsx` — icon positions state, drag handlers, marquee select, context menu, localStorage persistence
+- `src/components/xp/XPIcon.tsx` — NEW, extracted draggable icon component using `<img>` glyph
+- `src/components/xp/XPTaskbar.tsx` / `XPStartMenu.tsx` — swap CSS gradients for real PNG backgrounds where useful
+- `src/components/xp/XPWindow.tsx` — title bar 3-slice + real button PNGs, beveled border
+- `src/styles.css` — Luna-exact gradient stops, Tahoma load, cursor, marquee styles
+- `src/data/desktopIcons.ts` — NEW, central icon registry (label, glyph path, target window, default grid position)
+
+## 7. Out of scope (still)
+
+- Real window resize/snap, real audio in Media Player, real file system, boot/login screen, sound effects. Can be added later — registry-based icon list makes it trivial to wire new windows.
+
+## 8. What I need from you before building
+
+Nothing new — all icons are open-source XP recreations I can pull directly. Approve this plan and I'll build it end-to-end in one go and publish-ready.

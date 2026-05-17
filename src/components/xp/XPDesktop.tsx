@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import bliss from "@/assets/bliss.jpg";
 import shivam from "@/assets/shivam.jpg";
 import { resume } from "@/data/resume";
+import { DESKTOP_ICONS, ICONS, WINDOW_ICONS } from "@/data/desktopIcons";
 import type { WinState, WindowId } from "./types";
 import { XPWindow } from "./XPWindow";
+import { XPIcon } from "./XPIcon";
 import {
   AboutWindow,
   ContactWindow,
@@ -18,32 +20,33 @@ import {
   SkillsWindow,
 } from "./windows/AllWindows";
 
-type Def = { id: WindowId; title: string; icon: string; w: number; h: number };
+type Def = { id: WindowId; title: string; w: number; h: number };
 
 const DEFS: Record<WindowId, Def> = {
-  about: { id: "about", title: "About Me", icon: "👤", w: 520, h: 320 },
-  resume: { id: "resume", title: "Resume — Shivam Kumar Swarnkar.pdf", icon: "📄", w: 720, h: 560 },
-  projects: { id: "projects", title: "My Projects", icon: "📁", w: 560, h: 480 },
-  experience: { id: "experience", title: "Experience & Education", icon: "💼", w: 600, h: 540 },
-  skills: { id: "skills", title: "Skills", icon: "🧠", w: 500, h: 460 },
-  contact: { id: "contact", title: "Contact", icon: "✉", w: 520, h: 360 },
-  hobbies: { id: "hobbies", title: "My Hobbies", icon: "🎮", w: 460, h: 280 },
-  media: { id: "media", title: "Windows Media Player", icon: "🎵", w: 480, h: 480 },
-  pictures: { id: "pictures", title: "My Pictures", icon: "🖼", w: 540, h: 460 },
-  notepad: { id: "notepad", title: "Welcome — Notepad", icon: "📝", w: 480, h: 360 },
-  recycle: { id: "recycle", title: "Recycle Bin", icon: "🗑", w: 360, h: 220 },
+  about: { id: "about", title: "About Me", w: 520, h: 320 },
+  resume: { id: "resume", title: "Resume — Shivam Kumar Swarnkar.pdf", w: 720, h: 560 },
+  projects: { id: "projects", title: "My Projects", w: 560, h: 480 },
+  experience: { id: "experience", title: "Experience & Education", w: 600, h: 540 },
+  skills: { id: "skills", title: "Skills", w: 500, h: 460 },
+  contact: { id: "contact", title: "Contact", w: 520, h: 360 },
+  hobbies: { id: "hobbies", title: "My Hobbies", w: 460, h: 280 },
+  media: { id: "media", title: "Windows Media Player", w: 480, h: 480 },
+  pictures: { id: "pictures", title: "My Pictures", w: 540, h: 460 },
+  notepad: { id: "notepad", title: "Welcome — Notepad", w: 480, h: 360 },
+  recycle: { id: "recycle", title: "Recycle Bin", w: 360, h: 220 },
 };
 
-const DESKTOP_ICONS: { id: WindowId; label: string; icon: string }[] = [
-  { id: "about", label: "My Computer", icon: "🖥" },
-  { id: "resume", label: "My Resume", icon: "📄" },
-  { id: "projects", label: "My Projects", icon: "📁" },
-  { id: "experience", label: "Experience", icon: "💼" },
-  { id: "skills", label: "Skills", icon: "🧠" },
-  { id: "hobbies", label: "My Hobbies", icon: "🎮" },
-  { id: "contact", label: "Contact", icon: "✉" },
-  { id: "recycle", label: "Recycle Bin", icon: "🗑" },
-];
+const COL_W = 88;
+const ROW_H = 86;
+const LS_KEY = "xp:icon-positions:v1";
+
+function initialPositions() {
+  const out: Record<string, { x: number; y: number }> = {};
+  for (const ic of DESKTOP_ICONS) {
+    out[ic.id] = { x: 16 + ic.col * COL_W, y: 14 + ic.row * ROW_H };
+  }
+  return out;
+}
 
 export function XPDesktop() {
   const [windows, setWindows] = useState<WinState[]>([]);
@@ -51,21 +54,50 @@ export function XPDesktop() {
   const [startOpen, setStartOpen] = useState(false);
   const [shutdown, setShutdown] = useState(false);
   const [clock, setClock] = useState("");
-  const [selected, setSelected] = useState<WindowId | null>(null);
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
+  const [iconPos, setIconPos] = useState<Record<string, { x: number; y: number }>>(initialPositions);
+  const [isMobile, setIsMobile] = useState(false);
 
+  // Mobile detection
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Load saved positions
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, { x: number; y: number }>;
+        setIconPos((prev) => ({ ...prev, ...parsed }));
+      }
+    } catch {/* ignore */}
+  }, []);
+
+  // Persist positions
+  useEffect(() => {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(iconPos)); } catch {/* ignore */}
+  }, [iconPos]);
+
+  // Clock
   useEffect(() => {
     const tick = () => {
       const d = new Date();
-      setClock(
-        d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }).toLowerCase()
-      );
+      const h = d.getHours();
+      const m = d.getMinutes().toString().padStart(2, "0");
+      const ap = h >= 12 ? "PM" : "AM";
+      const h12 = ((h + 11) % 12) + 1;
+      setClock(`${h12}:${m} ${ap}`);
     };
     tick();
     const id = setInterval(tick, 30_000);
     return () => clearInterval(id);
   }, []);
 
-  // auto-open notepad welcome
+  // Auto-open Welcome Notepad
   useEffect(() => {
     const t = setTimeout(() => openWin("notepad"), 350);
     return () => clearTimeout(t);
@@ -79,20 +111,16 @@ export function XPDesktop() {
       const newZ = zTop + 1;
       setZTop(newZ);
       if (existing) {
-        return ws.map((w) =>
-          w.id === id ? { ...w, minimized: false, z: newZ } : w
-        );
+        return ws.map((w) => (w.id === id ? { ...w, minimized: false, z: newZ } : w));
       }
       const def = DEFS[id];
       const count = ws.length;
-      const baseX = 60 + count * 28;
-      const baseY = 40 + count * 28;
       const w: WinState = {
         id,
         title: def.title,
-        icon: def.icon,
-        x: baseX,
-        y: baseY,
+        icon: WINDOW_ICONS[id],
+        x: 60 + count * 28,
+        y: 40 + count * 28,
         w: def.w,
         h: def.h,
         z: newZ,
@@ -103,8 +131,7 @@ export function XPDesktop() {
     });
   };
 
-  const closeWin = (id: WindowId) =>
-    setWindows((ws) => ws.filter((w) => w.id !== id));
+  const closeWin = (id: WindowId) => setWindows((ws) => ws.filter((w) => w.id !== id));
   const focusWin = (id: WindowId) => {
     const newZ = zTop + 1;
     setZTop(newZ);
@@ -141,15 +168,9 @@ export function XPDesktop() {
 
   if (shutdown) {
     return (
-      <div
-        style={{
-          position: "fixed", inset: 0, background: "#3b6ea5", color: "white",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexDirection: "column", fontFamily: "Tahoma, sans-serif", textAlign: "center", padding: 20,
-        }}
-      >
-        <h1 style={{ fontWeight: "normal" }}>It is now safe to turn off your computer.</h1>
-        <p style={{ opacity: 0.8, marginTop: 20 }}>(Thanks for visiting!)</p>
+      <div className="xp-shutdown">
+        <h1>It is now safe to turn off your computer.</h1>
+        <p>(Thanks for visiting!)</p>
         <button className="xp-btn" style={{ marginTop: 24 }} onClick={() => setShutdown(false)}>
           ↻ Turn back on
         </button>
@@ -160,7 +181,7 @@ export function XPDesktop() {
   return (
     <div
       className="xp-desktop"
-      onClick={() => { setStartOpen(false); setSelected(null); }}
+      onPointerDown={() => { setStartOpen(false); setSelectedIcon(null); }}
       style={{
         position: "fixed",
         inset: 0,
@@ -170,31 +191,26 @@ export function XPDesktop() {
         overflow: "hidden",
       }}
     >
-      {/* Desktop icons */}
-      <div
-        style={{
-          position: "absolute",
-          top: 12,
-          left: 12,
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, 80px)",
-          gap: 6,
-          maxWidth: "calc(100vw - 24px)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {DESKTOP_ICONS.map((ic) => (
-          <div
+      {/* Desktop icons (draggable) */}
+      {DESKTOP_ICONS.map((ic) => {
+        const pos = iconPos[ic.id] ?? { x: 16, y: 14 };
+        return (
+          <XPIcon
             key={ic.id}
-            className={`xp-icon ${selected === ic.id ? "selected" : ""}`}
-            onClick={(e) => { e.stopPropagation(); setSelected(ic.id); }}
-            onDoubleClick={() => openWin(ic.id)}
-          >
-            <div className="xp-icon-glyph">{ic.icon}</div>
-            <div className="xp-icon-label">{ic.label}</div>
-          </div>
-        ))}
-      </div>
+            icon={ic}
+            x={pos.x}
+            y={pos.y}
+            selected={selectedIcon === ic.id}
+            draggable={!isMobile}
+            onSelect={() => setSelectedIcon(ic.id)}
+            onMove={(x, y) => setIconPos((p) => ({ ...p, [ic.id]: { x, y } }))}
+            onOpen={() => {
+              if (ic.href) window.open(ic.href, "_blank", "noopener");
+              else if (ic.target) openWin(ic.target);
+            }}
+          />
+        );
+      })}
 
       {/* Windows */}
       {windows.map((w) => (
@@ -214,39 +230,48 @@ export function XPDesktop() {
 
       {/* Start menu */}
       {startOpen && (
-        <div className="xp-start-menu" onClick={(e) => e.stopPropagation()}>
+        <div className="xp-start-menu" onPointerDown={(e) => e.stopPropagation()}>
           <div className="xp-sm-header">
             <img src={shivam} alt="" />
             <span>{resume.name}</span>
           </div>
           <div className="xp-sm-body">
             <div className="xp-sm-col">
-              <div className="xp-sm-item" onClick={() => openWin("about")}>👤 About Me</div>
-              <div className="xp-sm-item" onClick={() => openWin("resume")}>📄 Resume</div>
-              <div className="xp-sm-item" onClick={() => openWin("projects")}>📁 Projects</div>
-              <div className="xp-sm-item" onClick={() => openWin("experience")}>💼 Experience</div>
-              <div className="xp-sm-item" onClick={() => openWin("skills")}>🧠 Skills</div>
-              <div className="xp-sm-item" onClick={() => openWin("contact")}>✉ Contact</div>
+              <SMItem icon={ICONS.myComputer} label="My Computer" onClick={() => openWin("about")} bold />
+              <SMItem icon={ICONS.fileText} label="My Resume" onClick={() => openWin("resume")} bold />
+              <div className="xp-sm-sep" />
+              <SMItem icon={ICONS.folderShared} label="My Projects" onClick={() => openWin("projects")} />
+              <SMItem icon={ICONS.chart} label="Experience" onClick={() => openWin("experience")} />
+              <SMItem icon={ICONS.key} label="Skills" onClick={() => openWin("skills")} />
+              <SMItem icon={ICONS.outlook} label="Contact" onClick={() => openWin("contact")} />
             </div>
             <div className="xp-sm-col right">
-              <div className="xp-sm-item" onClick={() => openWin("hobbies")}>🎮 My Hobbies</div>
-              <div className="xp-sm-item" onClick={() => openWin("media")}>🎵 Media Player</div>
-              <div className="xp-sm-item" onClick={() => openWin("pictures")}>🖼 My Pictures</div>
-              <div className="xp-sm-item" onClick={() => openWin("notepad")}>📝 Notepad</div>
-              <a className="xp-sm-item" href={resume.contact.medium} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>✍ Medium Blog</a>
-              <a className="xp-sm-item" href={resume.contact.github} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>🐙 GitHub</a>
+              <SMItem icon={ICONS.folder} label="My Hobbies" onClick={() => openWin("hobbies")} />
+              <SMItem icon={ICONS.mediaPlayer} label="Media Player" onClick={() => openWin("media")} />
+              <SMItem icon={ICONS.pictures} label="My Pictures" onClick={() => openWin("pictures")} />
+              <SMItem icon={ICONS.notepad} label="Notepad" onClick={() => openWin("notepad")} />
+              <div className="xp-sm-sep" />
+              <SMItem icon={ICONS.ie} label="GitHub" onClick={() => window.open(resume.contact.github, "_blank")} />
+              <SMItem icon={ICONS.globe} label="LinkedIn" onClick={() => window.open(resume.contact.linkedin, "_blank")} />
+              <SMItem icon={ICONS.filePen} label="Medium Blog" onClick={() => window.open(resume.contact.medium, "_blank")} />
             </div>
           </div>
           <div className="xp-sm-footer">
-            <button onClick={() => setShutdown(true)}>⏻ Shut Down…</button>
+            <button onClick={() => setShutdown(true)}>
+              <img src={ICONS.powerOff} alt="" /> Turn Off Computer
+            </button>
           </div>
         </div>
       )}
 
       {/* Taskbar */}
-      <div className="xp-taskbar" onClick={(e) => e.stopPropagation()}>
-        <button className="xp-start-btn" onClick={() => setStartOpen((s) => !s)}>
-          <span style={{ fontSize: 18 }}>⊞</span> start
+      <div className="xp-taskbar" onPointerDown={(e) => e.stopPropagation()}>
+        <button
+          className={`xp-start-btn ${startOpen ? "active" : ""}`}
+          onClick={(e) => { e.stopPropagation(); setStartOpen((s) => !s); }}
+        >
+          <WindowsFlag />
+          <span className="xp-start-text">start</span>
         </button>
         <div className="xp-tasks">
           {windows.map((w) => (
@@ -258,17 +283,39 @@ export function XPDesktop() {
                 else focusWin(w.id);
               }}
             >
-              <span>{w.icon}</span>
+              <img src={w.icon} alt="" />
               <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{w.title}</span>
             </button>
           ))}
         </div>
         <div className="xp-tray">
-          <span>🔊</span>
-          <span>📶</span>
-          <span>{clock}</span>
+          <span className="xp-tray-ico">🔊</span>
+          <span className="xp-tray-ico">🛡</span>
+          <span className="xp-tray-clock">{clock}</span>
         </div>
       </div>
     </div>
+  );
+}
+
+function SMItem({ icon, label, onClick, bold }: { icon: string; label: string; onClick: () => void; bold?: boolean }) {
+  return (
+    <div className="xp-sm-item" onClick={onClick}>
+      <img src={icon} alt="" />
+      <span style={{ fontWeight: bold ? 700 : 400 }}>{label}</span>
+    </div>
+  );
+}
+
+function WindowsFlag() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
+      <g>
+        <path d="M3 4l7-1.4v8.2H3z" fill="#f8412c" />
+        <path d="M11 2.4L19 1v9.8h-8z" fill="#7cc242" />
+        <path d="M3 11.2h7v8.2L3 18z" fill="#00a4ef" />
+        <path d="M11 11.2h8V21l-8-1.5z" fill="#ffbb1c" />
+      </g>
+    </svg>
   );
 }
