@@ -1,8 +1,23 @@
 import type { WindowId } from "@/components/xp/types";
+import type { ComponentType } from "react";
+import {
+  AcrobatGlyph,
+  GithubGlyph,
+  LinkedinGlyph,
+  MediumGlyph,
+} from "@/components/xp/glyphs";
 
 /**
- * Authentic XP icon registry. All PNGs in /public/xp/icons/ from React95 icon set.
- * To add a new icon: add an entry here and (if it opens a window) wire the WindowId.
+ * Authentic XP icon registry. PNGs under /public/xp/icons (from React95 icon set);
+ * brand logos (GitHub, LinkedIn, etc.) are inline SVG components from glyphs.tsx.
+ *
+ * HOW TO EDIT
+ * -----------
+ * • Change which icon a desktop shortcut uses: edit DESKTOP_ICONS below.
+ * • Add a new desktop shortcut: push an entry into DESKTOP_ICONS with a unique
+ *   `id`, a `label`, an `icon` (PNG path) OR `glyph` (SVG component), and
+ *   either `target` (WindowId to open) or `href` (external link).
+ * • Add a new window: see .lovable/plan.md "Adding a window".
  */
 
 export const ICONS = {
@@ -27,15 +42,21 @@ export const ICONS = {
   powerOff: "/xp/icons/PowerOff_32x32_4.png",
   helpBook: "/xp/icons/HelpBook_32x32_4.png",
   chart: "/xp/icons/WindowGraph_32x32_4.png",
+  cmd: "/xp/icons/MsDos_32x32.png",
+  cdMusic: "/xp/icons/CdMusic_32x32_4.png",
+  network: "/xp/icons/Network_32x32_4.png",
 };
 
 export type DesktopIcon = {
   id: string;
   label: string;
-  icon: string;
-  /** WindowId to open on double-click. If absent, action() is used. */
+  /** PNG file path. Ignored if `glyph` is set. */
+  icon?: string;
+  /** Inline SVG component (used for brand logos). Takes precedence over `icon`. */
+  glyph?: ComponentType<{ size?: number }>;
+  /** WindowId to open on double-click. */
   target?: WindowId;
-  /** Optional custom action (e.g. open external link). */
+  /** External URL — opens in new tab. */
   href?: string;
   /** Initial grid slot (column, row), 0-indexed from top-left. */
   col: number;
@@ -44,15 +65,16 @@ export type DesktopIcon = {
 
 export const DESKTOP_ICONS: DesktopIcon[] = [
   { id: "my-computer", label: "My Computer", icon: ICONS.myComputer, target: "about", col: 0, row: 0 },
-  { id: "my-resume", label: "My Resume", icon: ICONS.fileText, target: "resume", col: 0, row: 1 },
+  { id: "my-resume", label: "My Resume", glyph: AcrobatGlyph, target: "resume", col: 0, row: 1 },
   { id: "my-projects", label: "My Projects", icon: ICONS.folderShared, target: "projects", col: 0, row: 2 },
   { id: "experience", label: "Experience", icon: ICONS.chart, target: "experience", col: 0, row: 3 },
   { id: "skills", label: "Skills", icon: ICONS.key, target: "skills", col: 0, row: 4 },
   { id: "my-hobbies", label: "My Hobbies", icon: ICONS.folder, target: "hobbies", col: 0, row: 5 },
   { id: "contact", label: "Contact", icon: ICONS.outlook, target: "contact", col: 0, row: 6 },
-  { id: "github", label: "My GitHub", icon: ICONS.ie, href: "https://github.com/sks01dev", col: 1, row: 0 },
-  { id: "linkedin", label: "My LinkedIn", icon: ICONS.globe, href: "https://www.linkedin.com/in/shivam-kumar-swarnkar-363965326", col: 1, row: 1 },
-  { id: "medium", label: "My Blog", icon: ICONS.filePen, href: "https://medium.com/@sswarnkar0001", col: 1, row: 2 },
+  { id: "my-work", label: "My Work", icon: ICONS.cmd, target: "projects", col: 1, row: 0 },
+  { id: "github", label: "My GitHub", glyph: GithubGlyph, href: "https://github.com/sks01dev", col: 1, row: 1 },
+  { id: "linkedin", label: "My LinkedIn", glyph: LinkedinGlyph, href: "https://www.linkedin.com/in/shivam-kumar-swarnkar-363965326", col: 1, row: 2 },
+  { id: "medium", label: "My Blog", glyph: MediumGlyph, href: "https://medium.com/@sswarnkar0001", col: 1, row: 3 },
   { id: "recycle", label: "Recycle Bin", icon: ICONS.recycleEmpty, target: "recycle", col: 0, row: 7 },
 ];
 

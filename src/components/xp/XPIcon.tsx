@@ -35,6 +35,7 @@ export function XPIcon({ icon, x, y, selected, onSelect, onOpen, onMove, draggab
     origin.current = null;
   };
 
+  const Glyph = icon.glyph;
   return (
     <div
       className={`xp-icon ${selected ? "selected" : ""}`}
@@ -44,12 +45,11 @@ export function XPIcon({ icon, x, y, selected, onSelect, onOpen, onMove, draggab
       onPointerUp={onPointerUp}
       onDoubleClick={(e) => { e.stopPropagation(); onOpen(); }}
     >
-      <img
-        src={icon.icon}
-        alt=""
-        draggable={false}
-        className="xp-icon-img"
-      />
+      <div className="xp-icon-img-wrap">
+        {Glyph ? <Glyph size={36} /> : (
+          <img src={icon.icon} alt="" draggable={false} className="xp-icon-img" />
+        )}
+      </div>
       <div className="xp-icon-label">{icon.label}</div>
     </div>
   );
