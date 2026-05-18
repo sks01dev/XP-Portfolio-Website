@@ -396,6 +396,14 @@
   outline: 1px dotted rgba(255,255,255,0.8);
   outline-offset: -2px;
 }
+.xp-icon-img-wrap {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
 .xp-icon-img {
   width: 36px;
   height: 36px;
