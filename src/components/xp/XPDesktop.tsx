@@ -6,6 +6,7 @@ import { DESKTOP_ICONS, ICONS, WINDOW_ICONS } from "@/data/desktopIcons";
 import type { WinState, WindowId } from "./types";
 import { XPWindow } from "./XPWindow";
 import { XPIcon } from "./XPIcon";
+import { VolumeGlyph, ShieldGlyph } from "./glyphs";
 import {
   AboutWindow,
   ContactWindow,
@@ -289,8 +290,8 @@ export function XPDesktop() {
           ))}
         </div>
         <div className="xp-tray">
-          <span className="xp-tray-ico">🔊</span>
-          <span className="xp-tray-ico">🛡</span>
+          <VolumeGlyph size={16} />
+          <ShieldGlyph size={16} />
           <span className="xp-tray-clock">{clock}</span>
         </div>
       </div>
