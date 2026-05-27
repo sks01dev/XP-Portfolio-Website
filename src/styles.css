@@ -509,3 +509,49 @@
 @media (max-width: 640px) {
   .xp-start-menu { width: 100vw; }
 }
+
+/* ---------- Vintage CRT overlay ----------
+ * Subtle scanlines + vignette to evoke a CRT monitor without
+ * harming legibility. Pointer-events disabled so it never blocks
+ * desktop interactions.
+ */
+.xp-desktop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.28) 100%),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.06) 0px,
+      rgba(0, 0, 0, 0.06) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .xp-desktop::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      transparent 100%
+    );
+    background-size: 100% 6px;
+    animation: xp-crt-flicker 6s linear infinite;
+    opacity: 0.5;
+  }
+}
+@keyframes xp-crt-flicker {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.55; }
+}
