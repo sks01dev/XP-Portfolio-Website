@@ -17,7 +17,7 @@ import {
  * • Add a new desktop shortcut: push an entry into DESKTOP_ICONS with a unique
  *   `id`, a `label`, an `icon` (PNG path) OR `glyph` (SVG component), and
  *   either `target` (WindowId to open) or `href` (external link).
- * • Add a new window: see .lovable/plan.md "Adding a window".
+ * • Add a new window: see docs/ARCHITECTURE.md "Adding a window".
  */
 
 export const ICONS = {
