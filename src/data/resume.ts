@@ -8,7 +8,7 @@ export const resume = {
   username: "Shivam",
   title: "ML Engineer · Data Science Undergrad",
   location: "India",
-  bio: "Undergraduate IT student with hands-on experience in machine learning, deep learning, and applied data science. Strong foundation in algorithms, statistical modeling, and end-to-end ML workflows. Looking for a Data Science Intern role to help build reliable, scalable, user-focused data-driven solutions.",
+  bio: "Undergraduate IT student with hands-on experience in machine learning, deep learning, and applied data science. Strong foundation in algorithms, statistical modeling, and end-to-end ML workflows.",
 
   contact: {
     email: "sswarnkar0001@gmail.com",
